@@ -329,10 +329,7 @@ const homeworkResults = [
   },
 ];
 
-
-
 const Student = function (name, email) {
-
   const homeWorkResults = [];
 
   this.getName = function () {
@@ -349,28 +346,65 @@ const Student = function (name, email) {
       topic,
       success,
     };
-    this.homeWorkResults.push(homeWorkResult);
+    homeWorkResults.push(homeWorkResult);
   };
 };
 
-const petya = new Student("Петя", "petya_silach@mail.com")
+const petya = new Student("Петя", "petya_silach@mail.com");
+// petya.addHomeWorkResults("asdasd", true)
 
-console.log(petya);
-
+// console.log(petya.getHomeWorkResults());
 
 const FrontendSchool = function (students, failedLimit) {
-    const studentsDataList = students.map(({ name, email }={}) => {
-        return new Student(name,email)
+  const studentsDataList = students.map(({ name, email } = {}) => {
+    return new Student(name, email);
+  });
+
+  this.printStudentsList = function () {
+    studentsDataList.forEach((element) => {
+      const mVoh = element.getHomeWorkResults().map(({ topic, success }) => `topic:${topic} result:${success}\n`).join("");
+      console.log(
+        `Name: ${element.getName()}\nEmail: ${element.getEmail()}\nHomework:${mVoh}`
+      );
     });
+  };
+  this.addHomeworkResults = function (array) {
+    const topicArr = array.map((el, indx, arr) => {
+      const top = el.topic;
+      const res = el.results.filter(({ email, success },i) => {
+        const student = studentsDataList.find(el => el.getEmail() === email);
+        student.addHomeWorkResults(top, success)
+      });
+    });
+  };
+  this.printStudentsEligibleForProject = function () {
+   const mVoh = studentsDataList.filter((el) => {
+      const arrHomework = el.getHomeWorkResults();
+     const failedHw = arrHomework.reduce((acc, el) => {
+        if (!el.success) {
+          return acc + 1; 
+        }
+        return acc
+     }, 0)
+      if (failedLimit <= failedHw) {
+        return el;
+     }
+   });
+    return mVoh.map(el=>el.getName());
+  }
+};
 
-    this.printStudentsList = function () {
-        studentsDataList.forEach((element) => {
-         console.log(`Name: ${element.getName()}\nEmail: ${element.getEmail()}\nHomework${element.getHomeWorkResults()}`);  
-       });
-   };
- 
-}
+const goIt = new FrontendSchool(listOfStudents, 1);
+goIt.addHomeworkResults(homeworkResults);
+// console.log(goIt.printStudentsList());
+console.log(goIt.printStudentsEligibleForProject());
 
-const goIt = new FrontendSchool(listOfStudents, homeworkResults);
 
-console.log(goIt.printStudentsList());
+
+// addHomeworkResults(homeworkResults): this method can be called with argument homeworkResult,
+//   object with 2 fields: topic(string) and results(array of objects with 2 fields: email(string)
+//   and success(boolean)). This method should update all student objects in FrontendLab studentsList.
+
+// printStudentsEligibleForProject(): this method should log to console 
+// list of students who didn’t fail more homework, than allowed failedLimit.
+
